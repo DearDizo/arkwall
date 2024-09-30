@@ -1,0 +1,88 @@
+#!/bin/bash
+
+
+#
+## generate the ipv4 block list.
+# 
+
+
+C_CODES=$1
+TMPDIR4=/tmp/countries4
+TMPDIR6=/tmp/countries6
+OUTPUT=$( dirname  $( realpath "$0" ) )
+
+OUTPUTv4="${OUTPUT}/output/ipv4.blocklist.nft"
+OUTPUTv6="${OUTPUT}/output/ipv6.blocklist.nft"
+
+
+mkdir -p "${TMPDIR4}" 2> /dev/null
+mkdir -p "${TMPDIR6}" 2> /dev/null
+
+ 
+for C in $( /usr/bin/ls "${TMPDIR4}" ) ; do
+    echo "[ !! ] - Deleting: ${TMPDIR4}/$C" 2> /dev/null
+    rm -f "${TMPDIR4}/$C"
+done
+
+for C in $( /usr/bin/ls "${TMPDIR6}" ) ; do
+    echo "[ !! ] - Deleting: ${TMPDIR6}/$C" 2> /dev/null
+    rm -f "${TMPDIR6}/$C"
+done
+
+
+
+for C in ${C_CODES[@]} ; do
+    /usr/bin/curl -s -L -o "${TMPDIR4}/$C.ipv4.zone" "https://www.ipdeny.com/ipblocks/data/aggregated/$C-aggregated.zone"
+    /usr/bin/curl -s -L -o "${TMPDIR6}/$C.ipv6.zone" "https://www.ipdeny.com/ipv6/ipaddresses/blocks/$C.zone"
+done
+
+
+if [ -f "${OUTPUTv4}" ] ; then 
+    echo '' > "${OUTPUTv4}"
+fi
+
+
+if [ -f "${OUTPUTv6}" ] ; then 
+    echo '' > "${OUTPUTv6}"
+fi
+
+
+echo "DEBUG: ${OUTPUTv4}"
+echo "DEBUG: ${OUTPUTv6}"
+
+
+cat > "${OUTPUTv4}" << EOF
+#!/usr/sbin/nft -f
+
+define Blocklistv4 = {
+EOF
+
+
+cat > "${OUTPUTv6}" << EOF
+#!/usr/sbin/nft -f
+
+define Blocklistv6 = {
+EOF
+
+
+for Z_IP_F in $( /usr/bin/ls "${TMPDIR4}" ) ; do
+
+    while read raw_ip4 ; do
+        echo -e "    $raw_ip4," >> "${OUTPUTv4}"
+    done < "${TMPDIR4}/$Z_IP_F"
+
+done  
+
+
+for Z_IP_F in $( /usr/bin/ls "${TMPDIR6}" ) ; do
+
+    while read raw_ip6 ; do
+        echo -e "    $raw_ip6," >> "${OUTPUTv6}"
+    done < "${TMPDIR6}/$Z_IP_F"
+
+done  
+
+
+echo -e "}" >> "${OUTPUTv4}"
+echo -e "}" >> "${OUTPUTv6}"
+
