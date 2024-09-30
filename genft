@@ -9,26 +9,25 @@
 C_CODES=$1
 TMPDIR4=/tmp/countries4
 TMPDIR6=/tmp/countries6
+
+TMP_DIRS=( "${TMPDIR4}" "${TMPDIR6}" )
+
 OUTPUT=$( dirname  $( realpath "$0" ) )
 
 OUTPUTv4="${OUTPUT}/output/ipv4.blocklist.nft"
 OUTPUTv6="${OUTPUT}/output/ipv6.blocklist.nft"
 
 
-mkdir -p "${TMPDIR4}" 2> /dev/null
-mkdir -p "${TMPDIR6}" 2> /dev/null
-
- 
-for C in $( /usr/bin/ls "${TMPDIR4}" ) ; do
-    echo "[ !! ] - Deleting: ${TMPDIR4}/$C" 2> /dev/null
-    rm -f "${TMPDIR4}/$C"
+for TMP_DIR in ${TMP_DIRS[@]} ; do 
+    if [ ! -d "${TMP_DIR}" ] ; then 
+        mkdir -p "${TMP_DIR}"
+    else
+        echo "[ !! ] - Deleting Content of: $TMP_DIR"
+        for C in $( /usr/bin/ls "${TMP_DIR}" ) ; do
+            rm -f "${TMP_DIR}/$C" 2> /dev/null
+        done
+    fi
 done
-
-for C in $( /usr/bin/ls "${TMPDIR6}" ) ; do
-    echo "[ !! ] - Deleting: ${TMPDIR6}/$C" 2> /dev/null
-    rm -f "${TMPDIR6}/$C"
-done
-
 
 
 for C in ${C_CODES[@]} ; do
