@@ -6,17 +6,18 @@
 # 
 
 
-C_CODES=$1
+C_CODES="$@"
+echo "[ ++ ] - Catching all ip ipv6 from: $@"
+
 TMPDIR4=/tmp/countries4
 TMPDIR6=/tmp/countries6
-
 TMP_DIRS=( "${TMPDIR4}" "${TMPDIR6}" )
 
 OUTPUT=$( dirname  $( realpath "$0" ) )
 
 OUTPUTv4="${OUTPUT}/output/ipv4.blocklist.nft"
 OUTPUTv6="${OUTPUT}/output/ipv6.blocklist.nft"
-
+OUT_FILES=( "${OUTPUTv4}" "${OUTPUTv6}" )
 
 for TMP_DIR in ${TMP_DIRS[@]} ; do 
     if [ ! -d "${TMP_DIR}" ] ; then 
@@ -36,18 +37,18 @@ for C in ${C_CODES[@]} ; do
 done
 
 
-if [ -f "${OUTPUTv4}" ] ; then 
-    echo '' > "${OUTPUTv4}"
-fi
+for OUT_FILE in ${OUT_FILES[@]} ; do
+    if [ -f "${OUT_FILE}" ] ; then
+        echo "[ !! ] - Erase content of: ${OUT_FILE}" 
+        echo '' > "${OUT_FILE}"
+    fi
+done
 
 
-if [ -f "${OUTPUTv6}" ] ; then 
-    echo '' > "${OUTPUTv6}"
-fi
 
-
-echo "DEBUG: ${OUTPUTv4}"
-echo "DEBUG: ${OUTPUTv6}"
+#
+################# fucking redundancy start ####################
+#
 
 
 cat > "${OUTPUTv4}" << EOF
@@ -82,6 +83,15 @@ for Z_IP_F in $( /usr/bin/ls "${TMPDIR6}" ) ; do
 done  
 
 
-echo -e "}" >> "${OUTPUTv4}"
-echo -e "}" >> "${OUTPUTv6}"
+#
+############### fucking redundancy ends  #######################
+#
+
+
+
+for OUT_FILE in ${OUT_FILES[@]} ; do
+    echo -e "}" >> "${OUT_FILE}"
+done
+
+
 
