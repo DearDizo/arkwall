@@ -19,6 +19,13 @@ OUTPUTv4="${OUTPUT}/output/ipv4.blocklist.nft"
 OUTPUTv6="${OUTPUT}/output/ipv6.blocklist.nft"
 OUT_FILES=( "${OUTPUTv4}" "${OUTPUTv6}" )
 
+
+#
+## is the output dir existing?
+#
+if ( ! -d "${OUTPUT}/output" ) ; then mkdir "${OUTPUT}/output" ; fi
+
+
 for TMP_DIR in ${TMP_DIRS[@]} ; do 
     if [ ! -d "${TMP_DIR}" ] ; then 
         mkdir -p "${TMP_DIR}"
