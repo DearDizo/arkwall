@@ -1,26 +1,35 @@
 #!/bin/bash
 
 
+
 #
-## generate the ipv4 block list.
+## generate the GeoIP ipv4/ipv6 block list for nftables.
 # 
 
 
-C_CODES="$@"
-echo "[ ++ ] - Catching all ip ipv6 from: $@"
 
+#
+## the args ... example: ./genft it ru cn 
+#
+C_CODES="$@"
+echo "[ ++ ] - Catching all ipv4 ipv6 from: $@"
+
+# the dirs to store the coutry files
 TMPDIR4=/tmp/countries4
 TMPDIR6=/tmp/countries6
 TMP_DIRS=( "${TMPDIR4}" "${TMPDIR6}" )
 
+# where is the script ? .. there creating a output dir
 OUTPUT=$( dirname  $( realpath "$0" ) )
 
+# the output destinations for the final blocklists
 OUTPUTv4="${OUTPUT}/output/ipv4.blocklist.nft"
 OUTPUTv6="${OUTPUT}/output/ipv6.blocklist.nft"
 OUT_FILES=( "${OUTPUTv4}" "${OUTPUTv6}" )
 
 
 function gen_tables() {
+    # generate the nft blocklists
     for Z_IP_F in $( /usr/bin/ls "${1}" ) ; do
 
         while read raw_ip ; do
@@ -32,12 +41,13 @@ function gen_tables() {
 
 
 #
-## is the output dir existing?
+## is the output dir existing? if not create it..
 #
 if [ ! -d "${OUTPUT}/output" ] ; then mkdir "${OUTPUT}/output" 2> /dev/null ; fi
 
 
 for TMP_DIR in ${TMP_DIRS[@]} ; do 
+    # create the tmp dirs and if they exists, delete its content
     if [ ! -d "${TMP_DIR}" ] ; then 
         mkdir -p "${TMP_DIR}"
     else
@@ -50,12 +60,14 @@ done
 
 
 for C in ${C_CODES[@]} ; do
+    # download all the ipv4 and ipv6 coutry files
     /usr/bin/curl -s -L -o "${TMPDIR4}/$C.ipv4.zone" "https://www.ipdeny.com/ipblocks/data/aggregated/$C-aggregated.zone"
     /usr/bin/curl -s -L -o "${TMPDIR6}/$C.ipv6.zone" "https://www.ipdeny.com/ipv6/ipaddresses/blocks/$C.zone"
 done
 
 
 for OUT_FILE in ${OUT_FILES[@]} ; do
+    # erase the content of the old blocklists
     if [ -f "${OUT_FILE}" ] ; then
         echo "[ !! ] - Erase content of: ${OUT_FILE}" 
         echo '' > "${OUT_FILE}"
@@ -63,12 +75,7 @@ for OUT_FILE in ${OUT_FILES[@]} ; do
 done
 
 
-
-#
-################# fucking redundancy start ####################
-#
-
-
+# write the default start into the nftables blocklist files
 cat > "${OUTPUTv4}" << EOF
 #!/usr/sbin/nft -f
 
@@ -82,19 +89,14 @@ cat > "${OUTPUTv6}" << EOF
 define Blocklistv6 = {
 EOF
 
-
+# write ipv4 and ipv6 addresses into the nftables blocklist files
 gen_tables "${TMPDIR4}" "${OUTPUTv4}"
 gen_tables "${TMPDIR6}" "${OUTPUTv6}"
 
 
 
-#
-############### fucking redundancy ends  #######################
-#
-
-
-
 for OUT_FILE in ${OUT_FILES[@]} ; do
+    # add the } and we are fine
     echo -e "}" >> "${OUT_FILE}"
 done
 
