@@ -20,10 +20,21 @@ OUTPUTv6="${OUTPUT}/output/ipv6.blocklist.nft"
 OUT_FILES=( "${OUTPUTv4}" "${OUTPUTv6}" )
 
 
+function gen_tables() {
+    for Z_IP_F in $( /usr/bin/ls "${1}" ) ; do
+
+        while read raw_ip ; do
+            echo -e "    $raw_ip," >> "${2}"
+        done < "${1}/$Z_IP_F"
+
+    done  
+}
+
+
 #
 ## is the output dir existing?
 #
-if ( ! -d "${OUTPUT}/output" ) ; then mkdir "${OUTPUT}/output" ; fi
+if [ ! -d "${OUTPUT}/output" ] ; then mkdir "${OUTPUT}/output" 2> /dev/null ; fi
 
 
 for TMP_DIR in ${TMP_DIRS[@]} ; do 
@@ -72,22 +83,9 @@ define Blocklistv6 = {
 EOF
 
 
-for Z_IP_F in $( /usr/bin/ls "${TMPDIR4}" ) ; do
+gen_tables "${TMPDIR4}" "${OUTPUTv4}"
+gen_tables "${TMPDIR6}" "${OUTPUTv6}"
 
-    while read raw_ip4 ; do
-        echo -e "    $raw_ip4," >> "${OUTPUTv4}"
-    done < "${TMPDIR4}/$Z_IP_F"
-
-done  
-
-
-for Z_IP_F in $( /usr/bin/ls "${TMPDIR6}" ) ; do
-
-    while read raw_ip6 ; do
-        echo -e "    $raw_ip6," >> "${OUTPUTv6}"
-    done < "${TMPDIR6}/$Z_IP_F"
-
-done  
 
 
 #
