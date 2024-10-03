@@ -19,7 +19,7 @@ TMPDIR4=/tmp/countries4
 TMPDIR6=/tmp/countries6
 TMP_DIRS=( "${TMPDIR4}" "${TMPDIR6}" )
 
-# where is the script ? .. there creating a output dir
+# Where is the script located? ... an output directory is to be created there.
 OUTPUT=$( dirname  $( realpath "$0" ) )
 
 # the output destinations for the final blocklists
