@@ -21,6 +21,8 @@ TMP_DIRS=( "${TMPDIR4}" "${TMPDIR6}" )
 
 # Where is the script located? ... an output directory is to be created there.
 OUTPUT=$( dirname  $( realpath "$0" ) )
+if [ ! -d "${OUTPUT}/output" ] ; then mkdir "${OUTPUT}/output" 2> /dev/null ; fi
+
 
 # the output destinations for the final blocklists
 OUTPUTv4="${OUTPUT}/output/ipv4.blocklist.nft"
@@ -38,12 +40,6 @@ function gen_tables() {
 
     done  
 }
-
-
-#
-## is the output dir existing? if not create it..
-#
-if [ ! -d "${OUTPUT}/output" ] ; then mkdir "${OUTPUT}/output" 2> /dev/null ; fi
 
 
 for TMP_DIR in ${TMP_DIRS[@]} ; do 
