@@ -28,19 +28,25 @@ define DMZ_6  = {  }
 
 
 #
-## interface
+## interfaces
 #
-define IFACE  = "wlp6s0"
+define IFACE  = ""
 define LHOST  = "lo"
 
 
-define SSH_PORT  = ""
+#
+## ports
+#
+define SSH_PORT  = 33221 # we should not use any default ports ...
 
-#
-## the firewall begins
-#
+
 
 table inet Styx {
+
+    # the earliest action ever happens here.
+    # everything defined in the lists is dropped right here, before anything else happens. 
+    # saves resources and does not return any response to the source.
+    # - "you shall not pass!"
 
     chain PREROUTE {
         
@@ -55,7 +61,7 @@ table inet Styx {
 table inet Charon {
 
 
-    # very very basic rules
+    # very very basic rules ;)
     chain INPUT {
 
         type filter hook input priority 0 ; policy drop ;
@@ -91,10 +97,8 @@ table inet Charon {
         #
         ## ssh 
         #
-        iifname $IFACE ip saddr  $LAN_4 tcp dport $SSH_PORT accept
-        # iifname $IFACE ip6 saddr $LAN_6 tcp dport $SSH_PORT accept
-
-
+        iifname $IFACE ip  saddr $LAN_4 tcp dport $SSH_PORT accept
+        iifname $IFACE ip6 saddr $LAN_6 tcp dport $SSH_PORT accept
 
     }
 
