@@ -35,7 +35,7 @@ function gen_tables() {
     for Z_IP_F in $( /usr/bin/ls "${1}" ) ; do
 
         while read raw_ip ; do
-            echo -e "    $raw_ip," >> "${2}"
+            echo -e "        $raw_ip," >> "${2}"
         done < "${1}/$Z_IP_F"
 
     done  
@@ -73,16 +73,22 @@ done
 
 # write the default start into the nftables blocklist files
 cat > "${OUTPUTv4}" << EOF
-#!/usr/sbin/nft -f
 
-define Blocklistv4 = {
+set drop_ipv4 {
+    typeof ip saddr
+    flags interval
+    auto-merge
+    elements = {
 EOF
 
 
 cat > "${OUTPUTv6}" << EOF
-#!/usr/sbin/nft -f
 
-define Blocklistv6 = {
+set drop_ipv6 {
+    typeof ip6 saddr
+    flags interval
+    auto-merge
+    elements = {
 EOF
 
 # write ipv4 and ipv6 addresses into the nftables blocklist files
@@ -93,7 +99,7 @@ gen_tables "${TMPDIR6}" "${OUTPUTv6}"
 
 for OUT_FILE in ${OUT_FILES[@]} ; do
     # add the } and we are fine
-    echo -e "}" >> "${OUT_FILE}"
+    echo -e "    }\n}" >> "${OUT_FILE}"
 done
 
 

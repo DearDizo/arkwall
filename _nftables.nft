@@ -8,23 +8,13 @@ flush ruleset
 
 
 #
-## includes
-#
-include "ipv4.blocklist.nft"
-include "ipv6.blocklist.nft"
-
-
-#
 ## some needed definitions
 #
 define LAN_4  = {  }
 define DNS_4  = { 149.112.112.112, 1.1.1.1, 9.9.9.9 }
 
-define LAN_6  = {  } 
-define DNS_6  = { 2620:fe::fe, 2620:fe::9 }
-
-define DMZ_4  = {  }
-define DMZ_6  = {  }
+define LAN_6  = {  }
+define DNS_6  = {  }
 
 
 #
@@ -37,10 +27,10 @@ define LHOST  = "lo"
 #
 ## ports
 #
-define SSH_PORT  = 33221 # we should not use any default ports ...
+define SSH_PORT  = 26532 # we should not use any default ports ...
 
 
-
+## PREROUTING / POSTROUTING
 table inet Styx {
 
     # the earliest action ever happens here.
@@ -48,16 +38,24 @@ table inet Styx {
     # saves resources and does not return any response to the source.
     # - "you shall not pass!"
 
+    #
+    ## include the sets
+    #
+    include "ipv4.blocklist.nft"
+    include "ipv6.blocklist.nft"
+
     chain PREROUTE {
         
         type filter hook prerouting priority raw ; policy accept ;
 
-        iifname $IFACE ip  saddr $Blocklistv4  drop;
-        iifname $IFACE ip6 saddr $Blocklistv6  drop;
+        iifname $IFACE ip  saddr @drop_ipv4  drop;
+        iifname $IFACE ip6 saddr @drop_ipv6  drop;
 
     }
 }
 
+
+## INPUT / OUTPUT / FORWARDING
 table inet Charon {
 
 
@@ -78,14 +76,14 @@ table inet Charon {
         ip6 nexthdr ipv6-icmp ip6 hoplimit 1 icmpv6 type { 
             nd-neighbor-advert, 
             nd-neighbor-solicit, 
-            nd-router-advert} 
-        counter accept
+            nd-router-advert
+        } counter accept
 		
         ip6 nexthdr ipv6-icmp ip6 hoplimit 255 icmpv6 type { 
             nd-neighbor-advert, 
             nd-neighbor-solicit, 
-            nd-router-advert} 
-        counter accept
+            nd-router-advert
+        } counter accept
          
 
         #
