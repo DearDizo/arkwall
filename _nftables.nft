@@ -84,12 +84,16 @@ table inet Charon {
             nd-neighbor-solicit, 
             nd-router-advert
         } counter accept
-         
+        
+        #
+        ## DHCPv6
+        #
+        ip6 saddr fe80::/64 udp dport 546 udp sport 547 counter accept
 
         #
         ## localhost rule 
         #
-        iifname $LHOST ip saddr != 127.0.0.0/8 ip daddr != 127.0.0.0/8 counter drop
+        iifname $LHOST accept
 
 
         #
